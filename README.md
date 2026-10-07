@@ -18,7 +18,7 @@ Starts an interactive SWI-Prolog session and loads the public API module.
 ### 2) Run the complete test suite
 
 ```bash
-swipl -q -g "[tests/test_thoughts,tests/test_formula,tests/test_ranking,tests/test_analogy,tests/test_variable_arrangement,tests/test_queen_bug,tests/test_web],run_tests,halt"
+swipl -q -g "[tests/test_thoughts,tests/test_formula,tests/test_ranking,tests/test_analogy,tests/test_variable_arrangement,tests/test_queen_bug,tests/test_web,tests/test_benchmark,tests/test_verifier],run_tests,halt"
 ```
 
 Runs all repository tests in one command and exits when finished.
@@ -109,3 +109,12 @@ Stops the server from the Prolog session where it was started.
 - `explain_strategy(+Strategy, -Explanation).` — Explains a named strategy.
 - `verify_transformation(+Original, +Candidate, -Result).` — Checks transformation correctness.
 - `benchmark_strategies(+Problem, +Strategies, -Results).` — Benchmarks selected strategies.
+
+## Current behavior and known limitations
+
+- Transformation verification proves identical terms directly. To test different binary relations, pass `cases(Inputs)` to `verifier:verify_transformation/4`; each input's ordered answers are compared, with a one-second limit per relation call. The public `/3` wrapper has no test inputs, so it reports `not_verified(no_test_cases)` for non-identical terms.
+- Benchmarks measure only strategies written as `benchmark_goal(Goal)`, enumerating the goal for up to one second. Adviser-generated strategy descriptions are not executable and are explicitly returned as unmeasured.
+- Formula discovery inspects loaded clauses and uses recursive-call counts to produce coarse constant, linear, or exponential candidates. It does not fit measured data or account for term sizes, indexing, or indirect recursion; unavailable definitions return an unknown result.
+- Strategy scores and variable arrangements remain fixed heuristics rather than analyses of a predicate's clauses or modes.
+- Thought extraction, feature recognition, and analogous-case selection remain keyword/rule based; they do not perform general source-code or natural-language understanding.
+- `optimise/2` proposes strategies but does not rewrite predicates. Explanations and debugging are limited to canned strategy descriptions and the Queen Bug analysis rather than general-purpose code diagnostics.
